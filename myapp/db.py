@@ -1,10 +1,14 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from alembic import context
 
-# DATABASE_URL = "postgresql+psycopg2://user:password@localhost:5432/mydb"
-DATABASE_URL = "postgresql+psycopg2://myuser:mypassword@localhost:5432/mydb"
-
-engine = create_engine(DATABASE_URL, echo=True)
+config = context.config
+db_url = os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+print('====================================')
+print(db_url)
+engine = create_engine(db_url, echo=True)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()

@@ -1,0 +1,72 @@
+name: Alembic CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  alembic_migration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_pass
+          POSTGRES_DB: ci_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci_user -d ci_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install psycopg2-binary alembic
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U ci_user; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+
+      - name: Run Alembic migrations
+        env:
+          DATABASE_URL: postgresql+psycopg2://ci_user:ci_pass@localhost:5432/ci_db
+        run: |
+          alembic upgrade head
+
+      - name: Verify migrations (example query)
+        env:
+          DATABASE_URL: postgresql+psycopg2://ci_user:ci_pass@localhost:5432/ci_db
+        run: |
+          python - <<EOF
+          import os
+          from sqlalchemy import create_engine, text
+
+          engine = create_engine(os.getenv("DATABASE_URL"))
+
+          # 检查 users 表是否存在
+          with engine.connect() as conn:
+              result = conn.execute(text("SELECT to_regclass('public.users');"))
+              table_name = result.scalar()
+              if table_name != 'users':
+                  raise Exception("users table not created!")
+              print("Migration verified successfully!")
+          EOF
