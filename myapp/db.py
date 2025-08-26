@@ -6,6 +6,7 @@ from alembic import context
 
 config = context.config
 db_url = os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+# TODO remove this print after debugging
 print('====================================')
 print(db_url)
 engine = create_engine(db_url, echo=True)
