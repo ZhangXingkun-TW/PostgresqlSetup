@@ -54,7 +54,7 @@ jobs:
       - name: Print final database schema
         env:
           POSTGRES_USER: ${{ vars.POSTGRES_USER }}
-          PGPASSWORD: ${{ vars.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
         run: |
           echo "=== Database Schema ==="
           pg_dump -U $POSTGRES_USER -h localhost -s $POSTGRES_DB
