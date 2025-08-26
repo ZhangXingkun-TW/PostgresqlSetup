@@ -19,13 +19,13 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
+          --health-cmd="pg_isready -U ${{ vars.POSTGRES_USER }} -d ${{ vars.POSTGRES_DB }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -53,13 +53,13 @@ jobs:
 
       - name: Run Alembic migrations
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: alembic upgrade head
 
       - name: Print final database schema
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
-          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
+          PGPASSWORD: ${{ vars.POSTGRES_PASSWORD }}
         run: |
           echo "=== Database Schema ==="
           pg_dump -U $POSTGRES_USER -h localhost -s $POSTGRES_DB
