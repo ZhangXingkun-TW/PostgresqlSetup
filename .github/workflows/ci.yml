@@ -1,4 +1,4 @@
-name: Alembic CI
+name: ${{ env.CI_WORKFLOW_NAME }}
 
 on:
   push:
@@ -6,16 +6,27 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  CI_WORKFLOW_NAME: Alembic CI
+  POSTGRES_USER: ${{ env.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+  POSTGRES_DB: ${{ env.POSTGRES_DB }}
+  DATABASE_URL: postgresql+psycopg2://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+
 jobs:
   alembic_migration:
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:15
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ci_user -d ci_db"
+          --health-cmd="pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -36,20 +47,20 @@ jobs:
 
       - name: Wait for PostgreSQL
         run: |
-          until pg_isready -h localhost -p 5432 -U ci_user; do
+          until pg_isready -h localhost -p 5432 -U $POSTGRES_USER -d $POSTGRES_DB; do
             echo "Waiting for postgres..."
             sleep 2
           done
 
       - name: Run Alembic migrations
         env:
-          DATABASE_URL: ${{env.DATABASE_URL}}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
         run: alembic upgrade head
 
       - name: Print final database schema
         env:
-          DATABASE_URL: ${{env.DATABASE_URL}}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
           echo "=== Database Schema ==="
-          # 使用 pg_dump 打印所有表结构和约束
-          PGPASSWORD=ci_pass pg_dump -U ci_user -h localhost -s ci_db
+          pg_dump -U $POSTGRES_USER -h localhost -s $POSTGRES_DB
