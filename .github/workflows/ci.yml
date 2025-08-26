@@ -7,10 +7,10 @@ on:
     branches: [ main ]
 
 env:
-  POSTGRES_USER: ${{ env.POSTGRES_USER }}
-  POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-  POSTGRES_DB: ${{ env.POSTGRES_DB }}
-  DATABASE_URL: postgresql+psycopg2://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+  POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
+  POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+  DATABASE_URL: postgresql+psycopg2://${{ vars.POSTGRES_USER }}:${{ vars.POSTGRES_PASSWORD }}@localhost:5432/${{ vars.POSTGRES_DB }}
 
 jobs:
   alembic_migration:
