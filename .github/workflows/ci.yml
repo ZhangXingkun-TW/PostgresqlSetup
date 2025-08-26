@@ -49,13 +49,11 @@ jobs:
           done
 
       - name: Run Alembic migrations
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
         run: alembic upgrade head
 
       - name: Print final database schema
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER }}
           PGPASSWORD: ${{ vars.POSTGRES_PASSWORD }}
         run: |
           echo "=== Database Schema ==="
