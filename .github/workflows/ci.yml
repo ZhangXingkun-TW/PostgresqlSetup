@@ -54,5 +54,5 @@ jobs:
       - name: Print final database schema
         run: |
           echo "=== Database Schema ==="
-          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} pg_dump -U ${{ secrets.POSTGRES_USER }} -h localhost -s ${{ secrets.POSTGRES_DB }}
+          PGPASSWORD=${{ vars.POSTGRES_PASSWORD }} pg_dump -U ${{ vars.POSTGRES_USER }} -h localhost -s ${{ vars.POSTGRES_DB }}
 
