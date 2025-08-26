@@ -47,12 +47,12 @@ jobs:
 
       - name: Run Alembic migrations
         env:
-          DATABASE_URL: {{env.DATABASE_URL}}
+          DATABASE_URL: ${{env.DATABASE_URL}}
         run: alembic upgrade head
 
       - name: Print final database schema
         env:
-          DATABASE_URL: {{env.DATABASE_URL}}
+          DATABASE_URL: ${{env.DATABASE_URL}}
         run: |
           echo "=== Database Schema ==="
           # 使用 pg_dump 打印所有表结构和约束
