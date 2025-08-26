@@ -1,0 +1,33 @@
+# .github/workflows/cd.yml
+name: CD - Deploy & Migrate
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Download Flyway from Nexus
+        run: |
+          curl -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+            -L "https://nexus.mycompany.com/repository/maven-public/org/flywaydb/flyway-commandline/10.16.0/flyway-commandline-10.16.0-linux-x64.tar.gz" \
+            -o flyway.tar.gz
+          tar -xzf flyway.tar.gz
+          sudo ln -s $(pwd)/flyway-10.16.0/flyway /usr/local/bin/flyway
+
+      - name: Run Flyway migrations
+        env:
+          FLYWAY_URL: jdbc:postgresql://${{ secrets.PGHOST }}:5432/${{ secrets.PGDATABASE }}
+          FLYWAY_USER: ${{ secrets.PGUSER }}
+          FLYWAY_PASSWORD: ${{ secrets.PGPASSWORD }}
+        run: |
+          flyway -locations=filesystem:./migrations migrate

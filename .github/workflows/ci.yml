@@ -1,0 +1,22 @@
+# .github/workflows/ci.yml
+name: CI - Lint & Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ feature/* ]
+
+jobs:
+  sql-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # SQL 检测工具，比如 sqlfluff
+      - name: Install SQLFluff
+        run: pip install sqlfluff
+
+      - name: Lint SQL migrations
+        run: sqlfluff lint migrations/ --dialect=postgres
